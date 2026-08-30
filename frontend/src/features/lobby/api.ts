@@ -48,6 +48,11 @@ export async function listRooms(): Promise<Room[]> {
   return rooms.map(mapRoom)
 }
 
+export async function getRoom(slug: string): Promise<Room> {
+  const room = await request<BackendRoom>(`/api/rooms/${slug}/`)
+  return mapRoom(room)
+}
+
 export async function createRoom(values: RoomFormValues): Promise<Room> {
   const room = await request<BackendRoom>("/api/rooms/", {
     method: "POST",

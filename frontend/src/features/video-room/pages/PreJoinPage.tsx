@@ -6,17 +6,43 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoTile } from "@/features/video-room/components/VideoTile"
 import { useLocalMedia } from "@/features/video-room/useLocalMedia"
+import { useRoom } from "@/features/lobby/hooks"
+import { ApiError } from "@/lib/apiClient"
 
 export function PreJoinPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { stream, error, isCameraOn, isMicOn, toggleCamera, toggleMic } = useLocalMedia()
+  const { data: room, isLoading, error: roomError } = useRoom(slug)
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading room...</p>
+  }
+
+  if (roomError || !room) {
+    const message =
+      roomError instanceof ApiError && roomError.status === 404
+        ? "This room doesn't exist or you don't have access to it."
+        : "Unable to load this room. Please try again."
+
+    return (
+      <div className="mx-auto grid max-w-md gap-4">
+        <Alert variant="destructive">
+          <AlertTitle>Can't join room</AlertTitle>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+        <Button render={<Link to="/rooms" />} variant="outline" className="w-full">
+          Back to rooms
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto grid max-w-md gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Ready to join?</CardTitle>
+          <CardTitle>Ready to join {room.title}?</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           {error ? (

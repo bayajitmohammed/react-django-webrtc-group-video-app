@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import { createRoom, deleteRoom, listRooms, updateRoom } from "@/features/lobby/api"
+import { createRoom, deleteRoom, getRoom, listRooms, updateRoom } from "@/features/lobby/api"
 import type { RoomFormValues } from "@/types/room"
 
 const roomsQueryKey = ["rooms"]
 
 export function useRooms() {
   return useQuery({ queryKey: roomsQueryKey, queryFn: listRooms })
+}
+
+export function useRoom(slug: string | undefined) {
+  return useQuery({
+    queryKey: [...roomsQueryKey, slug],
+    queryFn: () => getRoom(slug as string),
+    enabled: Boolean(slug),
+  })
 }
 
 export function useCreateRoom() {
