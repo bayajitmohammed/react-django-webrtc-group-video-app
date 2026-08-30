@@ -1,7 +1,8 @@
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
-import { Link, useNavigate } from "react-router"
+import { Link, useNavigate, useSearchParams } from "react-router"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FormItem } from "@/shared/components/FormItem"
+import { ApiError } from "@/lib/apiClient"
+import { resetPassword } from "@/features/auth/api"
 import {
   resetPasswordSchema,
   type ResetPasswordValues,
@@ -20,18 +23,49 @@ import {
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchParams] = useSearchParams()
+  const uid = searchParams.get("uid")
+  const token = searchParams.get("token")
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<ResetPasswordValues>({ resolver: zodResolver(resetPasswordSchema) })
 
-  async function onSubmit() {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsSubmitting(false)
-    navigate("/login")
+  const resetPasswordMutation = useMutation({
+    mutationFn: (values: ResetPasswordValues) => resetPassword(uid!, token!, values.password),
+    onSuccess: () => {
+      toast.success("Password reset. You can now log in.")
+      navigate("/login")
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Unable to reset password.")
+    },
+  })
+
+  function onSubmit(values: ResetPasswordValues) {
+    resetPasswordMutation.mutate(values)
+  }
+
+  if (!uid || !token) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Invalid reset link</CardTitle>
+          <CardDescription>
+            This password reset link is missing or malformed. Request a new one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link
+            to="/forgot-password"
+            className="text-sm text-foreground hover:underline"
+          >
+            Request a new link
+          </Link>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -64,8 +98,8 @@ export function ResetPasswordPage() {
             />
           </FormItem>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Resetting..." : "Reset password"}
+          <Button type="submit" className="w-full" disabled={resetPasswordMutation.isPending}>
+            {resetPasswordMutation.isPending ? "Resetting..." : "Reset password"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

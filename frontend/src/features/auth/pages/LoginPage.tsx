@@ -1,7 +1,8 @@
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,22 +14,28 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FormItem } from "@/shared/components/FormItem"
+import { ApiError } from "@/lib/apiClient"
+import { login } from "@/features/auth/api"
 import { loginSchema, type LoginValues } from "@/features/auth/schema"
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) })
 
-  async function onSubmit() {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsSubmitting(false)
-    navigate("/rooms")
+  const loginMutation = useMutation({
+    mutationFn: (values: LoginValues) => login(values.email, values.password),
+    onSuccess: () => navigate("/rooms"),
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Unable to log in.")
+    },
+  })
+
+  function onSubmit(values: LoginValues) {
+    loginMutation.mutate(values)
   }
 
   return (
@@ -58,8 +65,8 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Logging in..." : "Log in"}
+          <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+            {loginMutation.isPending ? "Logging in..." : "Log in"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

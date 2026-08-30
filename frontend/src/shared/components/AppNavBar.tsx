@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuthStore } from "@/features/auth/store"
 
 function initialsFor(firstName: string, lastName: string) {
   return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?"
@@ -18,10 +19,13 @@ function initialsFor(firstName: string, lastName: string) {
 
 export function AppNavBar() {
   const navigate = useNavigate()
-  const displayName = "Jane Doe"
-  const initials = initialsFor("Jane", "Doe")
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+  const displayName = user ? `${user.firstName} ${user.lastName}` : ""
+  const initials = user ? initialsFor(user.firstName, user.lastName) : "?"
 
   function handleLogout() {
+    logout()
     navigate("/login")
   }
 

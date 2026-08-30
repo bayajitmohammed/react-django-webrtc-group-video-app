@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { Link } from "react-router"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,13 +15,14 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FormItem } from "@/shared/components/FormItem"
+import { ApiError } from "@/lib/apiClient"
+import { forgotPassword } from "@/features/auth/api"
 import {
   forgotPasswordSchema,
   type ForgotPasswordValues,
 } from "@/features/auth/schema"
 
 export function ForgotPasswordPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSent, setIsSent] = useState(false)
   const {
     register,
@@ -27,11 +30,16 @@ export function ForgotPasswordPage() {
     formState: { errors },
   } = useForm<ForgotPasswordValues>({ resolver: zodResolver(forgotPasswordSchema) })
 
-  async function onSubmit() {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsSubmitting(false)
-    setIsSent(true)
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (values: ForgotPasswordValues) => forgotPassword(values.email),
+    onSuccess: () => setIsSent(true),
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Unable to send reset link.")
+    },
+  })
+
+  function onSubmit(values: ForgotPasswordValues) {
+    forgotPasswordMutation.mutate(values)
   }
 
   return (
@@ -53,8 +61,8 @@ export function ForgotPasswordPage() {
               <Input id="email" type="email" autoComplete="email" {...register("email")} />
             </FormItem>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Sending link..." : "Send reset link"}
+            <Button type="submit" className="w-full" disabled={forgotPasswordMutation.isPending}>
+              {forgotPasswordMutation.isPending ? "Sending link..." : "Send reset link"}
             </Button>
           </form>
         )}

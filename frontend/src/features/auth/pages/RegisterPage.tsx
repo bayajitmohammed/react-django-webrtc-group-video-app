@@ -1,7 +1,8 @@
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,22 +14,28 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FormItem } from "@/shared/components/FormItem"
+import { ApiError } from "@/lib/apiClient"
+import { register as registerUser } from "@/features/auth/api"
 import { registerSchema, type RegisterValues } from "@/features/auth/schema"
 
 export function RegisterPage() {
   const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) })
 
-  async function onSubmit() {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsSubmitting(false)
-    navigate("/rooms")
+  const registerMutation = useMutation({
+    mutationFn: registerUser,
+    onSuccess: () => navigate("/rooms"),
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Unable to create account.")
+    },
+  })
+
+  function onSubmit(values: RegisterValues) {
+    registerMutation.mutate(values)
   }
 
   return (
@@ -75,8 +82,8 @@ export function RegisterPage() {
             />
           </FormItem>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating account..." : "Create account"}
+          <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+            {registerMutation.isPending ? "Creating account..." : "Create account"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
