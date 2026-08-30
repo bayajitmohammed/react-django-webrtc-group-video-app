@@ -1,6 +1,6 @@
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FormItem } from "@/shared/components/FormItem"
+import { ApiError } from "@/lib/apiClient"
+import { useAuthStore } from "@/features/auth/store"
+import { useChangePassword, useUpdateProfile } from "@/features/profile/hooks"
 import {
   changePasswordSchema,
   profileDetailsSchema,
@@ -21,37 +24,45 @@ import {
   type ProfileDetailsValues,
 } from "@/features/profile/schema"
 
-const currentUser = {
-  firstName: "Jane",
-  lastName: "Doe",
-  email: "jane@example.com",
-}
-
 export function ProfilePage() {
-  const [isSavingDetails, setIsSavingDetails] = useState(false)
-  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const currentUser = useAuthStore((state) => state.user)
+  const updateProfile = useUpdateProfile()
+  const changePassword = useChangePassword()
 
   const detailsForm = useForm<ProfileDetailsValues>({
     resolver: zodResolver(profileDetailsSchema),
-    defaultValues: { firstName: currentUser.firstName, lastName: currentUser.lastName },
+    defaultValues: {
+      firstName: currentUser?.firstName ?? "",
+      lastName: currentUser?.lastName ?? "",
+    },
   })
 
   const passwordForm = useForm<ChangePasswordValues>({
     resolver: zodResolver(changePasswordSchema),
   })
 
-  async function saveDetails() {
-    setIsSavingDetails(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsSavingDetails(false)
+  function saveDetails(values: ProfileDetailsValues) {
+    updateProfile.mutate(values, {
+      onSuccess: () => toast.success("Profile updated."),
+      onError: (error) => {
+        toast.error(error instanceof ApiError ? error.message : "Unable to update profile.")
+      },
+    })
   }
 
-  async function changePassword() {
-    setIsChangingPassword(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setIsChangingPassword(false)
-    passwordForm.reset()
+  function submitChangePassword(values: ChangePasswordValues) {
+    changePassword.mutate(values, {
+      onSuccess: () => {
+        toast.success("Password updated.")
+        passwordForm.reset()
+      },
+      onError: (error) => {
+        toast.error(error instanceof ApiError ? error.message : "Unable to update password.")
+      },
+    })
   }
+
+  if (!currentUser) return null
 
   return (
     <div className="grid max-w-lg gap-6">
@@ -98,8 +109,8 @@ export function ProfilePage() {
           </form>
         </CardContent>
         <CardFooter className="justify-end">
-          <Button type="submit" form="details-form" disabled={isSavingDetails}>
-            {isSavingDetails ? "Saving..." : "Save changes"}
+          <Button type="submit" form="details-form" disabled={updateProfile.isPending}>
+            {updateProfile.isPending ? "Saving..." : "Save changes"}
           </Button>
         </CardFooter>
       </Card>
@@ -113,7 +124,7 @@ export function ProfilePage() {
           <form
             id="password-form"
             className="grid gap-4"
-            onSubmit={passwordForm.handleSubmit(changePassword)}
+            onSubmit={passwordForm.handleSubmit(submitChangePassword)}
           >
             <FormItem
               label="Current password"
@@ -154,8 +165,8 @@ export function ProfilePage() {
           </form>
         </CardContent>
         <CardFooter className="justify-end">
-          <Button type="submit" form="password-form" disabled={isChangingPassword}>
-            {isChangingPassword ? "Updating..." : "Update password"}
+          <Button type="submit" form="password-form" disabled={changePassword.isPending}>
+            {changePassword.isPending ? "Updating..." : "Update password"}
           </Button>
         </CardFooter>
       </Card>

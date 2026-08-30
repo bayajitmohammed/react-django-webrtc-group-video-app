@@ -12,11 +12,17 @@ import type { Room } from "@/types/room"
 
 interface DeleteRoomDialogProps {
   room: Room | null
+  isDeleting?: boolean
   onOpenChange: (open: boolean) => void
   onConfirm: (room: Room) => void
 }
 
-export function DeleteRoomDialog({ room, onOpenChange, onConfirm }: DeleteRoomDialogProps) {
+export function DeleteRoomDialog({
+  room,
+  isDeleting = false,
+  onOpenChange,
+  onConfirm,
+}: DeleteRoomDialogProps) {
   return (
     <AlertDialog open={room !== null} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -27,12 +33,13 @@ export function DeleteRoomDialog({ room, onOpenChange, onConfirm }: DeleteRoomDi
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isDeleting}
             onClick={() => room && onConfirm(room)}
           >
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

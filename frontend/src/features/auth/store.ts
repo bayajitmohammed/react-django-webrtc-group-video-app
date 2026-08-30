@@ -28,6 +28,7 @@ interface AuthState {
   user: User | null
   status: AuthStatus
   setSession: (accessToken: string, refreshToken: string, user: User) => void
+  setUser: (user: User) => void
   logout: () => void
   refreshAccessToken: () => Promise<boolean>
   bootstrap: () => Promise<void>
@@ -41,6 +42,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession(accessToken, refreshToken, user) {
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
     set({ accessToken, user, status: "authenticated" })
+  },
+
+  setUser(user) {
+    set({ user })
   },
 
   logout() {

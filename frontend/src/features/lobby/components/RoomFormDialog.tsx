@@ -29,6 +29,8 @@ interface RoomFormDialogProps {
   title: string
   description: string
   submitLabel: string
+  pendingLabel: string
+  isSubmitting?: boolean
   defaultValues?: RoomFormSchemaValues
   onSubmit: (values: RoomFormSchemaValues) => void
 }
@@ -45,6 +47,8 @@ export function RoomFormDialog({
   title,
   description,
   submitLabel,
+  pendingLabel,
+  isSubmitting = false,
   defaultValues,
   onSubmit,
 }: RoomFormDialogProps) {
@@ -67,7 +71,6 @@ export function RoomFormDialog({
 
   function submit(values: RoomFormSchemaValues) {
     onSubmit(values)
-    onOpenChange(false)
   }
 
   return (
@@ -113,10 +116,17 @@ export function RoomFormDialog({
           </FormItem>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">{submitLabel}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? pendingLabel : submitLabel}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

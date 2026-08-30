@@ -1,19 +1,25 @@
 import { useState } from "react"
 import { Plus, Search } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RoomCard } from "@/features/lobby/components/RoomCard"
 import { RoomFormDialog } from "@/features/lobby/components/RoomFormDialog"
 import { DeleteRoomDialog } from "@/features/lobby/components/DeleteRoomDialog"
-import { mockRooms } from "@/features/lobby/mockRooms"
+import { useCreateRoom, useDeleteRoom, useRooms, useUpdateRoom } from "@/features/lobby/hooks"
+import { useAuthStore } from "@/features/auth/store"
+import { ApiError } from "@/lib/apiClient"
 import type { RoomFormSchemaValues } from "@/features/lobby/schema"
 import type { Room } from "@/types/room"
 
-const currentUserId = 1
-
 export function LobbyPage() {
-  const [rooms, setRooms] = useState<Room[]>(mockRooms)
+  const currentUserId = useAuthStore((state) => state.user?.id)
+  const { data: rooms = [], isLoading, isError } = useRooms()
+  const createRoom = useCreateRoom()
+  const updateRoom = useUpdateRoom()
+  const deleteRoom = useDeleteRoom()
+
   const [search, setSearch] = useState("")
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
@@ -24,34 +30,34 @@ export function LobbyPage() {
   )
 
   function handleCreate(values: RoomFormSchemaValues) {
-    const now = new Date().toISOString()
-    const newRoom: Room = {
-      slug: crypto.randomUUID(),
-      title: values.title,
-      description: values.description,
-      roomType: values.roomType,
-      owner: { id: currentUserId, email: "jane@example.com", firstName: "Jane", lastName: "Doe" },
-      createdAt: now,
-      updatedAt: now,
-    }
-    setRooms((current) => [newRoom, ...current])
+    createRoom.mutate(values, {
+      onSuccess: () => setIsCreateOpen(false),
+      onError: (error) => {
+        toast.error(error instanceof ApiError ? error.message : "Unable to create room.")
+      },
+    })
   }
 
   function handleEdit(values: RoomFormSchemaValues) {
     if (!editingRoom) return
-    setRooms((current) =>
-      current.map((room) =>
-        room.slug === editingRoom.slug
-          ? { ...room, ...values, updatedAt: new Date().toISOString() }
-          : room
-      )
+    updateRoom.mutate(
+      { slug: editingRoom.slug, values },
+      {
+        onSuccess: () => setEditingRoom(null),
+        onError: (error) => {
+          toast.error(error instanceof ApiError ? error.message : "Unable to update room.")
+        },
+      }
     )
-    setEditingRoom(null)
   }
 
   function handleDelete(room: Room) {
-    setRooms((current) => current.filter((existing) => existing.slug !== room.slug))
-    setDeletingRoom(null)
+    deleteRoom.mutate(room.slug, {
+      onSuccess: () => setDeletingRoom(null),
+      onError: (error) => {
+        toast.error(error instanceof ApiError ? error.message : "Unable to delete room.")
+      },
+    })
   }
 
   return (
@@ -77,7 +83,11 @@ export function LobbyPage() {
         />
       </div>
 
-      {visibleRooms.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading rooms...</p>
+      ) : isError ? (
+        <p className="text-sm text-destructive">Unable to load rooms. Please try again.</p>
+      ) : visibleRooms.length === 0 ? (
         <p className="text-sm text-muted-foreground">No rooms match your search.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,6 +109,8 @@ export function LobbyPage() {
         title="Create a room"
         description="Give your room a title and choose who can join."
         submitLabel="Create room"
+        pendingLabel="Creating..."
+        isSubmitting={createRoom.isPending}
         onSubmit={handleCreate}
       />
 
@@ -108,6 +120,8 @@ export function LobbyPage() {
         title="Edit room"
         description="Update your room's details."
         submitLabel="Save changes"
+        pendingLabel="Saving..."
+        isSubmitting={updateRoom.isPending}
         defaultValues={
           editingRoom
             ? {
@@ -122,6 +136,7 @@ export function LobbyPage() {
 
       <DeleteRoomDialog
         room={deletingRoom}
+        isDeleting={deleteRoom.isPending}
         onOpenChange={(open) => !open && setDeletingRoom(null)}
         onConfirm={handleDelete}
       />
