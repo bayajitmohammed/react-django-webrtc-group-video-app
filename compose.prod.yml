@@ -1,5 +1,19 @@
 services:
+  frontend:
+    image: react-django-webrtc-group-video-app-frontend:prod
+    container_name: video-app-frontend-prod
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
   backend:
+    image: react-django-webrtc-group-video-app-backend:prod
+    container_name: video-app-backend-prod
     build:
       context: ./backend
       target: prod
@@ -10,6 +24,8 @@ services:
     restart: unless-stopped
 
   migrate:
+    image: react-django-webrtc-group-video-app-backend:prod
+    container_name: video-app-migrate-prod
     build:
       context: ./backend
       target: prod

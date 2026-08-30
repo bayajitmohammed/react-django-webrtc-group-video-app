@@ -11,7 +11,19 @@ venv/
 media/
 staticfiles/
 
+# --- Frontend (React/Vite) ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+
 # --- Editors/OS ---
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

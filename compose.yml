@@ -1,5 +1,22 @@
 services:
+  frontend:
+    image: react-django-webrtc-group-video-app-frontend:dev
+    container_name: video-app-frontend
+    build:
+      context: ./frontend
+      target: dev
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+
   backend:
+    image: react-django-webrtc-group-video-app-backend:dev
+    container_name: video-app-backend
     build:
       context: ./backend
       target: dev
@@ -12,6 +29,8 @@ services:
       - .env
 
   migrate:
+    image: react-django-webrtc-group-video-app-backend:dev
+    container_name: video-app-migrate
     build:
       context: ./backend
       target: dev
