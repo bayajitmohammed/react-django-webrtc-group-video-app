@@ -1,0 +1,17 @@
+# --- Backend (Python/Django) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+db.sqlite3
+.env
+.venv/
+venv/
+*.log
+media/
+staticfiles/
+
+# --- Editors/OS ---
+.DS_Store
+.vscode/
+.idea/

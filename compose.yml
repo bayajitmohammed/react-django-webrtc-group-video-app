@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+  migrate:
+    build:
+      context: ./backend
+      target: dev
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    command: python manage.py migrate
+    profiles:
+      - tools
