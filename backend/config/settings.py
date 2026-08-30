@@ -24,6 +24,11 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'main.User'
 
+# Unset (local dev, no Docker) -> in-memory channel layer + local-memory cache, no
+# Redis process required to run the app. Set (Docker/production) -> Redis-backed
+# versions of both, so presence/broadcast work across multiple worker processes.
+REDIS_URL = os.environ.get('REDIS_URL')
+
 
 # Application definition
 
@@ -35,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'channels',
     'main',
     'signaling',
 ]
@@ -81,6 +87,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [REDIS_URL]},
+        }
+    }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'}
+    }
+    CACHES = {
+        'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}
+    }
 
 
 # Database
