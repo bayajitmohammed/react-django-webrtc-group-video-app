@@ -31,10 +31,14 @@ FRONTEND_URL = os.environ['FRONTEND_URL']
 # versions of both, so presence/broadcast work across multiple worker processes.
 REDIS_URL = os.environ.get('REDIS_URL')
 
+TURN_SECRET = os.environ['TURN_SECRET']
+TURN_URLS = os.environ.get('TURN_URLS', '')
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

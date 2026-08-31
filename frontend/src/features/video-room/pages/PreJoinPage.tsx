@@ -5,14 +5,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoTile } from "@/features/video-room/components/VideoTile"
-import { useLocalMedia } from "@/features/video-room/useLocalMedia"
+import { useLocalMediaContext } from "@/features/video-room/LocalMediaContext"
 import { useRoom } from "@/features/lobby/hooks"
 import { ApiError } from "@/lib/apiClient"
 
 export function PreJoinPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { stream, error, isCameraOn, isMicOn, toggleCamera, toggleMic } = useLocalMedia()
+  const { stream, error, isCameraOn, isMicOn, toggleCamera, toggleMic } = useLocalMediaContext()
   const { data: room, isLoading, error: roomError } = useRoom(slug)
 
   if (isLoading) {

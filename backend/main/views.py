@@ -18,6 +18,7 @@ from .serializers import (
     UpdateProfileSerializer,
     UserSerializer,
 )
+from .turn import build_turn_credentials
 
 
 def ping(request):
@@ -78,6 +79,11 @@ class ChangePasswordView(views.APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TurnCredentialsView(views.APIView):
+    def get(self, request):
+        return response.Response(build_turn_credentials())
 
 
 class RoomViewSet(viewsets.ModelViewSet):

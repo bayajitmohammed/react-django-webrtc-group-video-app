@@ -10,6 +10,7 @@ import { RegisterPage } from "@/features/auth/pages/RegisterPage"
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
 import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage"
 import { LobbyPage } from "@/features/lobby/pages/LobbyPage"
+import { RoomSessionLayout } from "@/features/video-room/RoomSessionLayout"
 import { PreJoinPage } from "@/features/video-room/pages/PreJoinPage"
 import { VideoRoomPage } from "@/features/video-room/pages/VideoRoomPage"
 import { ProfilePage } from "@/features/profile/pages/ProfilePage"
@@ -34,8 +35,10 @@ export function AppRoutes() {
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/rooms/:slug/lobby" element={<PreJoinPage />} />
-        <Route path="/rooms/:slug/call" element={<VideoRoomPage />} />
+        <Route element={<RoomSessionLayout />}>
+          <Route path="/rooms/:slug/lobby" element={<PreJoinPage />} />
+          <Route path="/rooms/:slug/call" element={<VideoRoomPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

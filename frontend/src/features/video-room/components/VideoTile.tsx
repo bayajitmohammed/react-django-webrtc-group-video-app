@@ -10,6 +10,7 @@ interface VideoTileProps {
   isMuted?: boolean
   isCameraOn?: boolean
   isLocal?: boolean
+  className?: string
 }
 
 function initialsFor(name: string) {
@@ -20,7 +21,7 @@ function initialsFor(name: string) {
     .toUpperCase()
 }
 
-export function VideoTile({ name, stream, isMuted, isCameraOn = true, isLocal }: VideoTileProps) {
+export function VideoTile({ name, stream, isMuted, isCameraOn = true, isLocal, className }: VideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -30,7 +31,12 @@ export function VideoTile({ name, stream, isMuted, isCameraOn = true, isLocal }:
   }, [stream])
 
   return (
-    <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-secondary">
+    <div
+      className={cn(
+        "relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-800 ring-1 ring-white/10",
+        className,
+      )}
+    >
       {stream && isCameraOn ? (
         <video
           ref={videoRef}
@@ -45,8 +51,8 @@ export function VideoTile({ name, stream, isMuted, isCameraOn = true, isLocal }:
         </Avatar>
       )}
 
-      <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-background/80 px-2 py-1 text-xs font-medium">
-        {isMuted ? <MicOff className="size-3.5" /> : null}
+      <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+        {isMuted ? <MicOff className="size-3.5 text-red-400" /> : null}
         {name}
       </div>
     </div>
