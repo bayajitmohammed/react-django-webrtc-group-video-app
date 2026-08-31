@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: react-django-webrtc-group-video-app-frontend:dev
+    image: video-app-frontend:dev
     container_name: video-app-frontend
     build:
       context: ./frontend
@@ -15,7 +15,7 @@ services:
       - .env
 
   backend:
-    image: react-django-webrtc-group-video-app-backend:dev
+    image: video-app-backend:dev
     container_name: video-app-backend
     build:
       context: ./backend
@@ -29,7 +29,7 @@ services:
       - .env
 
   migrate:
-    image: react-django-webrtc-group-video-app-backend:dev
+    image: video-app-backend:dev
     container_name: video-app-migrate
     build:
       context: ./backend

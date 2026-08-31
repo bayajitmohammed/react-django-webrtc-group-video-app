@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: react-django-webrtc-group-video-app-frontend:prod
+    image: video-app-frontend:prod
     container_name: video-app-frontend-prod
     build:
       context: ./frontend
@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
 
   backend:
-    image: react-django-webrtc-group-video-app-backend:prod
+    image: video-app-backend:prod
     container_name: video-app-backend-prod
     build:
       context: ./backend
@@ -28,7 +28,7 @@ services:
     restart: unless-stopped
 
   migrate:
-    image: react-django-webrtc-group-video-app-backend:prod
+    image: video-app-backend:prod
     container_name: video-app-migrate-prod
     build:
       context: ./backend
