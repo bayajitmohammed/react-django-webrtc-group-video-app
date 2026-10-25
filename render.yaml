@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: group-call-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: bash render-start.sh
+    healthCheckPath: /api/ping/
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: group-call-db
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        value: noreply@example.com
+      - key: TURN_SECRET
+        generateValue: true
+      - key: TURN_URLS
+        value: ""
+
+  - type: web
+    name: group-call-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: bun install --frozen-lockfile && bun run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+
+databases:
+  - name: group-call-db
+    plan: free
+    region: singapore
+    databaseName: group_call
+    user: group_call
+    ipAllowList: []

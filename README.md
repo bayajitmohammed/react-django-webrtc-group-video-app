@@ -26,7 +26,7 @@ This repository is a from-scratch rebuild of the same idea, done the way I'd app
 | Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, Zustand, React Hook Form + Zod, Tailwind CSS, shadcn/ui |
 | Backend | Django, Django REST Framework, Django Channels (WebSocket signaling), Simple JWT |
 | Realtime / media | WebRTC (peer-to-peer media), coturn (STUN/TURN), Redis (channel layer & cache in prod) |
-| Data | SQLite (dev), PostgreSQL-ready via `DATABASES` config (currently SQLite by default) |
+| Data | SQLite by default, PostgreSQL when `DATABASE_URL` is set |
 | Infra | Docker, Docker Compose, Nginx (frontend prod), Gunicorn + Uvicorn worker (backend prod) |
 
 ## How it fits together
@@ -129,6 +129,8 @@ scripts/migrate.sh compose.prod.yml
 |---|---|---|
 | `DEBUG` | backend | `True`/`False`. Defaults to `False`. |
 | `SECRET_KEY` | backend | Django secret key. |
+| `ALLOWED_HOSTS` | backend | Comma-separated hostnames; defaults to localhost. Render's public hostname is added automatically. |
+| `DATABASE_URL` | backend | Optional database connection URL. Unset uses local SQLite; Render supplies PostgreSQL. |
 | `FRONTEND_URL` | backend | Used for CORS and password-reset links. |
 | `DEFAULT_FROM_EMAIL` | backend | "From" address for password-reset emails (console backend by default in dev). |
 | `TURN_SECRET` | backend, coturn | Shared secret used to mint short-lived TURN credentials. |
@@ -136,6 +138,14 @@ scripts/migrate.sh compose.prod.yml
 | `TURN_URLS` | backend | Comma-separated TURN/STUN URLs returned to the frontend. |
 | `REDIS_URL` | backend | If set, uses Redis for the channel layer and cache; if unset, falls back to in-memory (single-process only). |
 | `VITE_API_BASE_URL` | frontend | Base URL of the backend API. |
+
+## Deploy on Render
+
+The [Render deployment guide](docs/deploy-render.md) walks through deploying the
+root `render.yaml` Blueprint: a free static frontend, one Django ASGI process,
+and free PostgreSQL. It covers URL configuration, testing, free-tier limits, and
+the external TURN/email services needed to test those features fully. Local
+development and Docker Compose remain available with the same setup above.
 
 ## Migrations
 

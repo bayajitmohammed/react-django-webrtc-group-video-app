@@ -3,6 +3,7 @@ channels==4.3.2
 channels_redis==4.3.0
 click==8.5.0
 daphne==4.2.2
+dj-database-url==3.1.2
 django-cors-headers==4.9.0
 Django==6.1
 djangorestframework==3.18.0
@@ -11,6 +12,8 @@ gunicorn==26.2.0
 h11==0.16.0
 msgpack==1.2.2
 PyJWT==2.13.0
+psycopg[binary]==3.3.6
 redis==8.1.0
 sqlparse==0.6.0
 uvicorn==0.52.4
+whitenoise==6.12.0
